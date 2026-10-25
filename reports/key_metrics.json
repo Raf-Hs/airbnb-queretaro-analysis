@@ -1,0 +1,470 @@
+{
+  "generated_at_utc": "2026-10-25T16:31:53+00:00",
+  "sample": {
+    "listings_total": 100,
+    "listings_city": 99,
+    "rural_outliers": 1,
+    "hosts": 50,
+    "superhosts": 55,
+    "professionally_managed": 17,
+    "professional_hosts": 2,
+    "entire_homes": 75,
+    "private_rooms": 24,
+    "within_1km_pct": 51.515151515151516,
+    "months": 12
+  },
+  "headline": {
+    "price_mxn": {
+      "n": 99,
+      "mean": 1302.909090909091,
+      "median": 1029.2,
+      "p25": 657.95,
+      "p75": 1357.8,
+      "min": 362.4,
+      "max": 10496.9
+    },
+    "occupancy": {
+      "n": 99,
+      "mean": 0.2653838383838384,
+      "median": 0.241,
+      "p25": 0.099,
+      "p75": 0.4245,
+      "min": 0.027,
+      "max": 0.663
+    },
+    "adjusted_occupancy": {
+      "n": 99,
+      "mean": 0.31860606060606056,
+      "median": 0.278,
+      "p25": 0.127,
+      "p75": 0.5315000000000001,
+      "min": 0.027,
+      "max": 0.88
+    },
+    "revenue_mxn": {
+      "n": 99,
+      "mean": 121170.31313131313,
+      "median": 87335.0,
+      "p25": 36594.0,
+      "p75": 184562.0,
+      "min": 5850.0,
+      "max": 787547.0
+    },
+    "revpar_mxn": {
+      "n": 99,
+      "mean": 318.3909090909091,
+      "median": 233.0,
+      "p25": 96.0,
+      "p75": 485.9,
+      "min": 14.6,
+      "max": 2119.0
+    }
+  },
+  "bootstrap_ci_95": {
+    "price_mxn": {
+      "statistic": "median",
+      "low": 831.6,
+      "high": 1159.8
+    },
+    "occupancy": {
+      "statistic": "median",
+      "low": 0.181,
+      "high": 0.315
+    },
+    "adjusted_occupancy": {
+      "statistic": "median",
+      "low": 0.19687500000000013,
+      "high": 0.362
+    },
+    "revenue_mxn": {
+      "statistic": "median",
+      "low": 54273.0,
+      "high": 116516.0
+    },
+    "revpar_mxn": {
+      "statistic": "median",
+      "low": 148.7,
+      "high": 289.5
+    }
+  },
+  "room_type": {
+    "entire_home": {
+      "n": 75,
+      "share_pct": 75.75757575757575,
+      "median_adr_mxn": 1172.8,
+      "median_occupancy": 0.307,
+      "median_revenue_mxn": 128135.0,
+      "revenue_share_pct": 92.1926071000656
+    },
+    "private_room": {
+      "n": 24,
+      "share_pct": 24.242424242424242,
+      "median_adr_mxn": 657.95,
+      "median_occupancy": 0.125,
+      "median_revenue_mxn": 30492.0,
+      "revenue_share_pct": 7.807392899934403
+    }
+  },
+  "seasonality": {
+    "complete_window": [
+      "2025-08-01",
+      "2026-04-01"
+    ],
+    "note": "May-Jul 2026 are right-censored by the data snapshot and excluded from realised-demand claims.",
+    "months": [
+      {
+        "month": "2025-08",
+        "occupancy": 0.3359,
+        "median_adr_quoted": 842.0,
+        "median_adr_booked": 949.0,
+        "revenue_mxn": 1104260.0
+      },
+      {
+        "month": "2025-09",
+        "occupancy": 0.299,
+        "median_adr_quoted": 916.0,
+        "median_adr_booked": 970.0,
+        "revenue_mxn": 1077486.0
+      },
+      {
+        "month": "2025-10",
+        "occupancy": 0.3232,
+        "median_adr_quoted": 904.0,
+        "median_adr_booked": 904.0,
+        "revenue_mxn": 1067247.0
+      },
+      {
+        "month": "2025-11",
+        "occupancy": 0.3101,
+        "median_adr_quoted": 935.0,
+        "median_adr_booked": 916.0,
+        "revenue_mxn": 1089135.0
+      },
+      {
+        "month": "2025-12",
+        "occupancy": 0.3389,
+        "median_adr_quoted": 933.0,
+        "median_adr_booked": 1001.0,
+        "revenue_mxn": 1342015.0
+      },
+      {
+        "month": "2026-01",
+        "occupancy": 0.2701,
+        "median_adr_quoted": 984.0,
+        "median_adr_booked": 957.5,
+        "revenue_mxn": 905670.0
+      },
+      {
+        "month": "2026-02",
+        "occupancy": 0.3185,
+        "median_adr_quoted": 1017.0,
+        "median_adr_booked": 1022.5,
+        "revenue_mxn": 1006751.0
+      },
+      {
+        "month": "2026-03",
+        "occupancy": 0.3275,
+        "median_adr_quoted": 1060.0,
+        "median_adr_booked": 1059.0,
+        "revenue_mxn": 1209558.0
+      },
+      {
+        "month": "2026-04",
+        "occupancy": 0.2514,
+        "median_adr_quoted": 1150.0,
+        "median_adr_booked": 1197.5,
+        "revenue_mxn": 1037661.0
+      }
+    ],
+    "peak_occupancy_month": "2025-12",
+    "peak_revenue_month": "2025-12",
+    "lowest_occupancy_month": "2026-04"
+  },
+  "concentration": {
+    "total_revenue_mxn": 11995861.0,
+    "gini": 0.487619058310566,
+    "top10_pct_share": 31.61597987839306,
+    "top20_pct_share": 50.49363276216688,
+    "top50_pct_share": 85.07203442920854,
+    "top_host_listings": 11,
+    "top_host_share_pct": 18.86919996822237
+  },
+  "correlations": {
+    "price_mxn__occupancy": {
+      "spearman_rho": 0.14069313832374017,
+      "p_value": 0.1648266976168317,
+      "n": 99
+    },
+    "price_mxn__distance_centro_km": {
+      "spearman_rho": -0.012794338891583991,
+      "p_value": 0.8999769778220509,
+      "n": 99
+    },
+    "price_mxn__guests": {
+      "spearman_rho": 0.5660641153346981,
+      "p_value": 4.445833767266437e-08,
+      "n": 80
+    },
+    "price_mxn__bedrooms": {
+      "spearman_rho": 0.4741734315639876,
+      "p_value": 8.866408717650896e-06,
+      "n": 80
+    },
+    "revenue_mxn__occupancy": {
+      "spearman_rho": 0.8269572288838671,
+      "p_value": 5.397787625626692e-26,
+      "n": 99
+    },
+    "revenue_mxn__price_mxn": {
+      "spearman_rho": 0.6048732220160791,
+      "p_value": 3.3424274516375056e-11,
+      "n": 99
+    },
+    "occupancy__num_reviews": {
+      "spearman_rho": 0.38960127538107797,
+      "p_value": 6.721219259021258e-05,
+      "n": 99
+    },
+    "rating_overall__occupancy": {
+      "spearman_rho": 0.13683789414299624,
+      "p_value": 0.17908589764811003,
+      "n": 98
+    },
+    "rating_overall__price_mxn": {
+      "spearman_rho": 0.06739954635514167,
+      "p_value": 0.5096318488407137,
+      "n": 98
+    }
+  },
+  "tests": [
+    {
+      "comparison": "entire_home vs private_room",
+      "price_mxn": {
+        "group_a_median": 1172.8,
+        "group_b_median": 657.95,
+        "ratio_a_to_b": 1.782506269473364,
+        "mann_whitney_p": 2.749637652349467e-07,
+        "cliffs_delta": 0.7,
+        "n_a": 75,
+        "n_b": 24
+      },
+      "occupancy": {
+        "group_a_median": 0.307,
+        "group_b_median": 0.125,
+        "ratio_a_to_b": 2.456,
+        "mann_whitney_p": 0.001620218264914297,
+        "cliffs_delta": 0.42944444444444446,
+        "n_a": 75,
+        "n_b": 24
+      },
+      "revenue_mxn": {
+        "group_a_median": 128135.0,
+        "group_b_median": 30492.0,
+        "ratio_a_to_b": 4.202249770431589,
+        "mann_whitney_p": 5.465489942394691e-07,
+        "cliffs_delta": 0.6822222222222222,
+        "n_a": 75,
+        "n_b": 24
+      }
+    },
+    {
+      "comparison": "superhost vs not",
+      "price_mxn": {
+        "group_a_median": 970.0,
+        "group_b_median": 1176.5,
+        "ratio_a_to_b": 0.8244793880152996,
+        "mann_whitney_p": 0.32593758898511827,
+        "cliffs_delta": -0.11570247933884298,
+        "n_a": 55,
+        "n_b": 44
+      },
+      "occupancy": {
+        "group_a_median": 0.315,
+        "group_b_median": 0.1795,
+        "ratio_a_to_b": 1.754874651810585,
+        "mann_whitney_p": 0.013833951152405584,
+        "cliffs_delta": 0.2892561983471074,
+        "n_a": 55,
+        "n_b": 44
+      },
+      "revenue_mxn": {
+        "group_a_median": 102070.0,
+        "group_b_median": 61629.5,
+        "ratio_a_to_b": 1.65618737779797,
+        "mann_whitney_p": 0.2139136913479729,
+        "cliffs_delta": 0.14628099173553719,
+        "n_a": 55,
+        "n_b": 44
+      }
+    },
+    {
+      "comparison": "professionally managed vs independent",
+      "price_mxn": {
+        "group_a_median": 1445.3,
+        "group_b_median": 846.25,
+        "ratio_a_to_b": 1.707887740029542,
+        "mann_whitney_p": 4.5478178043142594e-05,
+        "cliffs_delta": 0.6312769010043041,
+        "n_a": 17,
+        "n_b": 82
+      },
+      "occupancy": {
+        "group_a_median": 0.353,
+        "group_b_median": 0.1945,
+        "ratio_a_to_b": 1.8149100257069408,
+        "mann_whitney_p": 0.01504477976424839,
+        "cliffs_delta": 0.3766140602582496,
+        "n_a": 17,
+        "n_b": 82
+      },
+      "revenue_mxn": {
+        "group_a_median": 212004.0,
+        "group_b_median": 60345.0,
+        "ratio_a_to_b": 3.513199105145414,
+        "mann_whitney_p": 0.00013457075354495292,
+        "cliffs_delta": 0.5911047345767575,
+        "n_a": 17,
+        "n_b": 82
+      }
+    }
+  ],
+  "within_listing": {
+    "paired_listings": 98,
+    "median_adr_change_pct_aug_to_apr": 24.479926394541383,
+    "mean_adr_change_pct_aug_to_apr": 25.97884303853963,
+    "share_raising_adr_pct": 93.87755102040816,
+    "price_index_aug100": {
+      "2025-08-01": {
+        "median": 100.0,
+        "p25": 100.0,
+        "p75": 100.0
+      },
+      "2025-09-01": {
+        "median": 102.4,
+        "p25": 98.4,
+        "p75": 109.7
+      },
+      "2025-10-01": {
+        "median": 106.2,
+        "p25": 100.6,
+        "p75": 115.9
+      },
+      "2025-11-01": {
+        "median": 106.7,
+        "p25": 101.5,
+        "p75": 118.6
+      },
+      "2025-12-01": {
+        "median": 105.6,
+        "p25": 100.9,
+        "p75": 114.2
+      },
+      "2026-01-01": {
+        "median": 107.6,
+        "p25": 102.3,
+        "p75": 117.8
+      },
+      "2026-02-01": {
+        "median": 106.9,
+        "p25": 99.0,
+        "p75": 117.2
+      },
+      "2026-03-01": {
+        "median": 120.2,
+        "p25": 109.2,
+        "p75": 129.2
+      },
+      "2026-04-01": {
+        "median": 124.5,
+        "p25": 112.1,
+        "p75": 134.2
+      },
+      "2026-05-01": {
+        "median": 124.9,
+        "p25": 111.4,
+        "p75": 134.9
+      },
+      "2026-06-01": {
+        "median": 126.7,
+        "p25": 114.6,
+        "p75": 134.9
+      },
+      "2026-07-01": {
+        "median": 126.4,
+        "p25": 112.4,
+        "p75": 136.3
+      }
+    },
+    "occupancy_change_pp_vs_aug": {
+      "2025-08-01": {
+        "median": 0.0,
+        "p25": 0.0,
+        "p75": 0.0
+      },
+      "2025-09-01": {
+        "median": 0.0,
+        "p25": -12.3,
+        "p75": 6.6
+      },
+      "2025-10-01": {
+        "median": 0.0,
+        "p25": -16.1,
+        "p75": 12.9
+      },
+      "2025-11-01": {
+        "median": 0.0,
+        "p25": -15.8,
+        "p75": 10.8
+      },
+      "2025-12-01": {
+        "median": 3.2,
+        "p25": -16.1,
+        "p75": 19.4
+      },
+      "2026-01-01": {
+        "median": 0.0,
+        "p25": -27.4,
+        "p75": 12.9
+      },
+      "2026-02-01": {
+        "median": 0.0,
+        "p25": -20.2,
+        "p75": 14.2
+      },
+      "2026-03-01": {
+        "median": 0.0,
+        "p25": -19.3,
+        "p75": 12.9
+      },
+      "2026-04-01": {
+        "median": -3.1,
+        "p25": -25.8,
+        "p75": 6.8
+      },
+      "2026-05-01": {
+        "median": -6.5,
+        "p25": -31.4,
+        "p75": 0.0
+      },
+      "2026-06-01": {
+        "median": -9.7,
+        "p25": -39.6,
+        "p75": 0.2
+      },
+      "2026-07-01": {
+        "median": -19.4,
+        "p25": -48.4,
+        "p75": 0.0
+      }
+    },
+    "note": "Median across listings of each listing's ratio to its own Aug-2025 ADR. A 9-month window cannot separate a repricing trend from seasonal pricing."
+  },
+  "consistency": {
+    "monthly_revenue_sum_mxn": 11505194.0,
+    "ttm_revenue_sum_mxn": 11995861.0,
+    "difference_pct": 4.264743384596557,
+    "monthly_reserved_nights": 9588,
+    "ttm_reserved_nights": 9588,
+    "note": "Reserved nights match exactly; TTM revenue is slightly higher, consistent with fees collected outside the nightly rate (cleaning/extra-guest)."
+  }
+}

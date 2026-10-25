@@ -1,0 +1,409 @@
+/* ============================================================================
+   Querétaro Airbnb analysis — DAX measures
+   ----------------------------------------------------------------------------
+   Model assumed by every measure below:
+
+     Listings        100 rows, grain = listing (TTM summary fields)
+     MonthlyRates  1,195 rows, grain = listing × month
+     ReviewsMonthly  532 rows, grain = listing × month
+     Date             366 rows, grain = day  (calculated table, see bottom)
+
+   Relationships (all single-direction, Date/Listings -> facts):
+     Date[Date]        1 ── *  MonthlyRates[date]
+     Date[Date]        1 ── *  ReviewsMonthly[date]
+     Listings[listing_id] 1 ── *  MonthlyRates[listing_id]
+     Listings[listing_id] 1 ── *  ReviewsMonthly[listing_id]
+
+   IMPORTANT — mixed grains
+   Listing-level fields (price_mxn, occupancy, revenue_mxn) are trailing-twelve-
+   month aggregates. They are NOT additive across months. Keep listing-grain
+   measures on listing-grain visuals (cards, scatter, bar by segment) and
+   month-grain measures on Date-axis visuals. Do not average a listing-level
+   measure along a Date axis; that silently mixes grains.
+
+   Create a home for these measures:
+     Calculated table:  Measures = ROW ( "x", 0 )
+   then hide the single column and place all measures in that table.
+
+   Suggested format strings:
+     currency  "MX$#,##0"
+     percent   "0.0%"
+     points    "+0.0 pts;-0.0 pts;0.0 pts"
+     ratio     "0.00\"×\""
+     integer   "#,##0"
+   ========================================================================== */
+
+
+/* ============================================================================
+   1. PORTFOLIO — listing grain
+   ========================================================================== */
+
+Listing Count =
+COUNTROWS ( Listings )
+-- format: integer
+
+City Listing Count =
+CALCULATE ( COUNTROWS ( Listings ), Listings[is_city_core] = TRUE )
+-- format: integer
+
+Host Count =
+DISTINCTCOUNT ( Listings[host_id] )
+-- format: integer
+
+Total TTM Revenue =
+SUM ( Listings[revenue_mxn] )
+-- format: currency
+
+Median TTM Revenue =
+MEDIAN ( Listings[revenue_mxn] )
+-- format: currency
+
+Mean TTM Revenue =
+AVERAGE ( Listings[revenue_mxn] )
+-- format: currency
+
+Median ADR (Quoted) =
+MEDIAN ( Listings[price_mxn] )
+-- format: currency
+-- Quoted asking rate, not realised revenue per night.
+
+Mean ADR (Quoted) =
+AVERAGE ( Listings[price_mxn] )
+-- format: currency
+
+Median Calendar Occupancy =
+MEDIAN ( Listings[occupancy] )
+-- format: percent
+-- reserved nights / all calendar nights (blocked nights count as not earned)
+
+Median Adjusted Occupancy =
+MEDIAN ( Listings[adjusted_occupancy] )
+-- format: percent
+-- reserved nights / nights not blocked by the host. Report only as secondary.
+
+Median RevPAR =
+MEDIAN ( Listings[revpar_mxn] )
+-- format: currency
+
+TTM Reserved Nights =
+SUM ( Listings[ttm_reserved_days] )
+-- format: integer
+
+TTM Blocked Nights =
+SUM ( Listings[ttm_blocked_days] )
+-- format: integer
+-- blocked nights are a SUBSET of available nights; never add them to totals
+
+TTM Available Nights =
+SUM ( Listings[ttm_available_days] )
+-- format: integer
+
+Blocked Share of Available Nights =
+DIVIDE ( SUM ( Listings[ttm_blocked_days] ), SUM ( Listings[ttm_available_days] ) )
+-- format: percent
+
+Median Length of Stay =
+MEDIAN ( Listings[ttm_avg_length_of_stay] )
+-- format: "0.0 \"nights\""
+
+Share Within 1 km =
+DIVIDE (
+    CALCULATE ( COUNTROWS ( Listings ), Listings[distance_centro_km] <= 1 ),
+    COUNTROWS ( Listings )
+)
+-- format: percent
+
+Capacity Metadata Coverage =
+DIVIDE (
+    CALCULATE ( COUNTROWS ( Listings ), NOT ISBLANK ( Listings[bedrooms] ) ),
+    COUNTROWS ( Listings )
+)
+-- format: percent
+-- 0.80 in the full sample; show this next to any capacity visual.
+
+Entire Home Revenue Share =
+DIVIDE (
+    CALCULATE ( SUM ( Listings[revenue_mxn] ), Listings[room_type] = "entire_home" ),
+    SUM ( Listings[revenue_mxn] )
+)
+-- format: percent
+
+Revenue per Guest (Median) =
+MEDIANX (
+    FILTER ( Listings, NOT ISBLANK ( Listings[price_per_guest_mxn] ) ),
+    Listings[price_per_guest_mxn]
+)
+-- format: currency
+-- 19 listings have no guest count; MEDIANX ignores them but they are not random.
+
+
+/* ============================================================================
+   2. CONCENTRATION AND HOSTS — listing grain
+   ========================================================================== */
+
+Top 10% Revenue Share =
+VAR TotalRevenue = SUM ( Listings[revenue_mxn] )
+VAR Cutoff =
+    CALCULATE (
+        PERCENTILEX.INC ( Listings, Listings[revenue_mxn], 0.90 ),
+        ALLSELECTED ( Listings )
+    )
+VAR TopRevenue =
+    CALCULATE ( SUM ( Listings[revenue_mxn] ), Listings[revenue_mxn] >= Cutoff )
+RETURN
+    DIVIDE ( TopRevenue, TotalRevenue )
+-- format: percent  (0.316 in the full city sample)
+
+Top 20% Revenue Share =
+VAR TotalRevenue = SUM ( Listings[revenue_mxn] )
+VAR Cutoff =
+    CALCULATE (
+        PERCENTILEX.INC ( Listings, Listings[revenue_mxn], 0.80 ),
+        ALLSELECTED ( Listings )
+    )
+VAR TopRevenue =
+    CALCULATE ( SUM ( Listings[revenue_mxn] ), Listings[revenue_mxn] >= Cutoff )
+RETURN
+    DIVIDE ( TopRevenue, TotalRevenue )
+-- format: percent  (0.505)
+
+Top Host Revenue Share =
+VAR PerHost =
+    ADDCOLUMNS (
+        VALUES ( Listings[host_id] ),
+        "@hostRevenue", CALCULATE ( SUM ( Listings[revenue_mxn] ) )
+    )
+VAR LargestHostRevenue = MAXX ( PerHost, [@hostRevenue] )
+RETURN
+    DIVIDE ( LargestHostRevenue, SUM ( Listings[revenue_mxn] ) )
+-- format: percent  (0.189; one host, 11 listings)
+
+Largest Host Listing Count =
+VAR PerHost =
+    ADDCOLUMNS (
+        VALUES ( Listings[host_id] ),
+        "@n", CALCULATE ( COUNTROWS ( Listings ) )
+    )
+RETURN
+    MAXX ( PerHost, [@n] )
+-- format: integer  (11)
+
+/* Gini is computed once in Python (src/analyze.py) and reported as 0.488.
+   A faithful DAX Gini requires a sorted running-total over every listing, which
+   is expensive and easy to get subtly wrong. Rather than ship a fragile measure,
+   the dashboard carries a static annotation card:
+     "Revenue Gini 0.488 — computed in Python, reports/key_metrics.json"   */
+
+
+/* ============================================================================
+   3. MONTHLY GRAIN — seasonality, pricing, censoring
+   ========================================================================== */
+
+Monthly Revenue =
+SUM ( MonthlyRates[revenue_mxn] )
+-- format: currency
+
+Reserved Nights (Monthly) =
+SUM ( MonthlyRates[reserved_days] )
+-- format: integer
+
+Vacant Nights (Monthly) =
+SUM ( MonthlyRates[vacant_days] )
+-- format: integer
+
+Calendar Occupancy (Monthly) =
+DIVIDE (
+    SUM ( MonthlyRates[reserved_days] ),
+    SUM ( MonthlyRates[reserved_days] ) + SUM ( MonthlyRates[vacant_days] )
+)
+-- format: percent
+-- Matches the definition used everywhere else in the project.
+
+Quoted ADR (Monthly, Median) =
+MEDIAN ( MonthlyRates[adr_quoted_mxn] )
+-- format: currency
+-- Non-null in zero-booking months, so quoted-price trends use every row.
+
+Realised ADR =
+DIVIDE ( SUM ( MonthlyRates[revenue_mxn] ), SUM ( MonthlyRates[reserved_days] ) )
+-- format: currency
+-- Nightly-rate revenue only; excludes some fees. Not gross booking value.
+
+Revenue per Available Night =
+DIVIDE (
+    SUM ( MonthlyRates[revenue_mxn] ),
+    SUM ( MonthlyRates[reserved_days] ) + SUM ( MonthlyRates[vacant_days] )
+)
+-- format: currency
+
+Booked Listing Months =
+CALCULATE ( COUNTROWS ( MonthlyRates ), MonthlyRates[has_bookings] = TRUE )
+-- format: integer
+
+Zero Booking Rate =
+DIVIDE (
+    CALCULATE ( COUNTROWS ( MonthlyRates ), MonthlyRates[has_bookings] = FALSE ),
+    COUNTROWS ( MonthlyRates )
+)
+-- format: percent  (0.309 in the full sample)
+
+Reviews (Monthly) =
+SUM ( ReviewsMonthly[num_reviews] )
+-- format: integer
+-- Reviews lag stays; used only as a censoring signal, never as a demand proxy.
+
+ADR Index vs Aug 2025 =
+VAR CurrentADR = [Quoted ADR (Monthly, Median)]
+VAR AugADR =
+    CALCULATE (
+        [Quoted ADR (Monthly, Median)],
+        ALL ( 'Date' ),
+        'Date'[Month Start] = DATE ( 2025, 8, 1 )
+    )
+RETURN
+    DIVIDE ( CurrentADR, AugADR )
+-- format: "0.0"
+-- Reading 124.5 in April 2026 means +24.5% versus August 2025.
+
+Occupancy Change vs Aug 2025 (pts) =
+VAR CurrentOccupancy = [Calendar Occupancy (Monthly)]
+VAR AugOccupancy =
+    CALCULATE (
+        [Calendar Occupancy (Monthly)],
+        ALL ( 'Date' ),
+        'Date'[Month Start] = DATE ( 2025, 8, 1 )
+    )
+RETURN
+    ( CurrentOccupancy - AugOccupancy ) * 100
+-- format: points
+
+Revenue (Complete Months Only) =
+CALCULATE (
+    [Monthly Revenue],
+    FILTER ( ALL ( 'Date' ), 'Date'[Is Complete] = TRUE )
+)
+-- format: currency
+-- Excludes May–Jul 2026. Use this for any "realised demand" KPI.
+
+Occupancy (Complete Months Only) =
+CALCULATE (
+    [Calendar Occupancy (Monthly)],
+    FILTER ( ALL ( 'Date' ), 'Date'[Is Complete] = TRUE )
+)
+-- format: percent
+
+Censoring Label =
+IF (
+    SELECTEDVALUE ( 'Date'[Is Complete] ) = FALSE,
+    "Right-censored — excluded from demand claims",
+    "Complete observation month"
+)
+-- format: text
+-- Drive a card or a conditional-format tooltip from this.
+
+Complete Window Label =
+VAR FirstMonth = MIN ( MonthlyRates[date] )
+VAR LastComplete = CALCULATE ( MAX ( 'Date'[Month Start] ), 'Date'[Is Complete] = TRUE )
+RETURN
+    FORMAT ( FirstMonth, "MMM yyyy" ) & " – " & FORMAT ( LastComplete, "MMM yyyy" )
+-- format: text
+
+
+/* ============================================================================
+   4. SEGMENT COMPARISONS — listing grain
+   ========================================================================== */
+
+Superhost Median Occupancy =
+CALCULATE ( MEDIAN ( Listings[occupancy] ), Listings[superhost] = TRUE )
+-- format: percent
+
+Non-Superhost Median Occupancy =
+CALCULATE ( MEDIAN ( Listings[occupancy] ), Listings[superhost] = FALSE )
+-- format: percent
+
+Superhost Occupancy Uplift (pts) =
+( [Superhost Median Occupancy] - [Non-Superhost Median Occupancy] ) * 100
+-- format: points
+-- Descriptive association only: superhost status is not randomly assigned.
+
+Entire Home Median ADR =
+CALCULATE ( MEDIAN ( Listings[price_mxn] ), Listings[room_type] = "entire_home" )
+-- format: currency
+
+Private Room Median ADR =
+CALCULATE ( MEDIAN ( Listings[price_mxn] ), Listings[room_type] = "private_room" )
+-- format: currency
+
+Room Type ADR Ratio =
+DIVIDE ( [Entire Home Median ADR], [Private Room Median ADR] )
+-- format: ratio  (1.78×)
+
+Entire Home Median Revenue =
+CALCULATE ( MEDIAN ( Listings[revenue_mxn] ), Listings[room_type] = "entire_home" )
+-- format: currency
+
+Private Room Median Revenue =
+CALCULATE ( MEDIAN ( Listings[revenue_mxn] ), Listings[room_type] = "private_room" )
+-- format: currency
+
+Room Type Revenue Ratio =
+DIVIDE ( [Entire Home Median Revenue], [Private Room Median Revenue] )
+-- format: ratio  (4.20×)
+
+Pro-Managed Listing Count =
+CALCULATE ( COUNTROWS ( Listings ), Listings[professional_management] = TRUE )
+-- format: integer
+-- If this ever reads 17 with a distinct-host count of 2, the visual MUST carry
+-- the note "two-host case study". See the dashboard spec.
+
+Pro-Managed Distinct Hosts =
+CALCULATE (
+    DISTINCTCOUNT ( Listings[host_id] ),
+    Listings[professional_management] = TRUE
+)
+-- format: integer
+
+Pro-Managed Median Revenue =
+CALCULATE ( MEDIAN ( Listings[revenue_mxn] ), Listings[professional_management] = TRUE )
+-- format: currency
+
+Independent Median Revenue =
+CALCULATE ( MEDIAN ( Listings[revenue_mxn] ), Listings[professional_management] = FALSE )
+-- format: currency
+
+Management Revenue Ratio =
+DIVIDE ( [Pro-Managed Median Revenue], [Independent Median Revenue] )
+-- format: ratio
+-- 3.51× across 17 listings run by 2 hosts. Label as a case study, not an effect.
+
+High-Price Flag Count =
+CALCULATE ( COUNTROWS ( Listings ), Listings[is_high_price_outlier] = TRUE )
+-- format: integer
+-- These listings are retained everywhere; the flag exists only for sensitivity
+-- checks and tooltips.
+
+
+/* ============================================================================
+   5. DATE TABLE (calculated table, not a measure)
+   ----------------------------------------------------------------------------
+   Create with Modeling ▸ New table, then mark as date table on [Date].
+   ========================================================================== */
+
+Date =
+ADDCOLUMNS (
+    CALENDAR ( DATE ( 2025, 8, 1 ), DATE ( 2026, 7, 31 ) ),
+    "Month Start", DATE ( YEAR ( [Date] ), MONTH ( [Date] ), 1 ),
+    "Month", FORMAT ( [Date], "MMM YYYY" ),
+    "Month Short", FORMAT ( [Date], "MMM" ),
+    "Month Number", MONTH ( [Date] ),
+    "Quarter", "Q" & QUARTER ( [Date] ),
+    "Is Complete", [Date] < DATE ( 2026, 5, 1 ),
+    "Is Censored", [Date] >= DATE ( 2026, 5, 1 )
+)
+
+/* After creating the table:
+   - Sort 'Date'[Month] by 'Date'[Month Start]
+   - Sort 'Date'[Month Short] by 'Date'[Month Number]
+   - Format [Month Start] and [Date] as date, not date/time
+   - Mark as date table
+   - Hide the raw [Date] column from report view if you prefer Month Start only  */

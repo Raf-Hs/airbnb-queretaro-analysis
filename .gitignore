@@ -1,0 +1,42 @@
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+*.egg-info/
+.pytest_cache/
+
+# --- Data and build artefacts ---
+# Raw data is committed deliberately (CC BY-NC 4.0, attribution required) so the
+# analysis is reproducible. Generated files can be recreated with run_all.py.
+data/processed/*.csv
+data/processed/*.json
+airbnb_queretaro.db
+airbnb_queretaro.db-journal
+airbnb_queretaro.db-wal
+airbnb_queretaro.db-shm
+
+# --- Reports ---
+# Figures and rendered reports are committed for reviewer convenience.
+# Uncomment the next two lines if you prefer to keep the repo light.
+# reports/figures/*.png
+# reports/sql_results.md
+
+# --- Notebook output ---
+# The executed notebook is committed as evidence; keep its outputs.
+notebooks/_build_nb.py
+
+# --- Power BI ---
+# A .pbix is binary and is not produced by this project. Uncomment if you build one
+# and decide not to commit it.
+# powerbi/*.pbix
+# powerbi/*.pbit
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
