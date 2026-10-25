@@ -1,0 +1,14 @@
+# Everything uses Git's normal text handling by default.
+* text=auto
+
+# Preserve the exact bytes of source data: documented SHA-256 checksums must
+# match a fresh clone, and JSONL/CSV/GeoJSON parsers are byte-sensitive.
+data/raw/** -text
+data/processed/** -text
+
+# Binary artefacts.
+*.png binary
+*.jpg binary
+*.pbix binary
+*.pbit binary
+*.db binary
