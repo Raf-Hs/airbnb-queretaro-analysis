@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-25T16:31:53+00:00",
+  "generated_at_utc": "2026-10-25T19:18:27+00:00",
   "sample": {
     "listings_total": 100,
     "listings_city": 99,
@@ -466,5 +466,175 @@
     "monthly_reserved_nights": 9588,
     "ttm_reserved_nights": 9588,
     "note": "Reserved nights match exactly; TTM revenue is slightly higher, consistent with fees collected outside the nightly rate (cleaning/extra-guest)."
+  },
+  "business_recommendations": {
+    "generated_at_utc": "2026-10-25T19:19:44+00:00",
+    "publication_cut": 5,
+    "scoring": "priority_score = 0.5 * rule weight + 0.5 * evidence strength",
+    "thresholds": {
+      "pricing_repricing_divergence": {
+        "min_adr_change_pct": 15.0,
+        "max_occupancy_change_pp": -1.0,
+        "description": "Within-listing median asking-ADR change of at least +15% between Aug 2025 and Apr 2026 *and* median calendar occupancy falling by at least 1.0 percentage point over the same window."
+      },
+      "revenue_concentration": {
+        "min_gini": 0.4,
+        "min_top10_share_pct": 30.0,
+        "description": "Gini coefficient of listing revenue at or above 0.40, or the top 10% of listings earning at least 30% of sample revenue."
+      },
+      "capacity_price_signal": {
+        "min_abs_spearman": 0.4,
+        "min_n": 30,
+        "min_abs_spearman_bedrooms": 0.3,
+        "description": "|Spearman rho| between asking ADR and guest capacity of at least 0.40 (and at least 0.30 for bedrooms) on at least 30 listings with capacity metadata."
+      },
+      "seasonal_amplitude": {
+        "min_occupancy_spread_pp": 6.0,
+        "min_peak_revenue_uplift_pct": 15.0,
+        "description": "Peak-to-trough monthly calendar occupancy of at least 6 percentage points, or peak-month revenue at least 15% above the median month, inside the uncensored window Aug 2025 - Apr 2026."
+      },
+      "data_completeness_prerequisite": {
+        "min_missing_capacity_pct": 15.0,
+        "min_inexact_location_pct": 50.0,
+        "min_partial_history_listings": 1,
+        "description": "At least 15% of listings missing the capacity fields a rate rule depends on, at least 50% of listings with inexact coordinates, or any listing with a partial booking history."
+      },
+      "inventory_mix_room_type": {
+        "min_revenue_share_pct": 80.0,
+        "description": "A single room type earning at least 80% of sample revenue, or a median revenue ratio of at least 2.0x between room types."
+      }
+    },
+    "rule_weights": {
+      "pricing_repricing_divergence": 90.0,
+      "revenue_concentration": 85.0,
+      "capacity_price_signal": 80.0,
+      "seasonal_amplitude": 78.0,
+      "data_completeness_prerequisite": 85.0,
+      "inventory_mix_room_type": 65.0
+    },
+    "recommendations": [
+      {
+        "rank": 1,
+        "rule_id": "capacity_price_signal",
+        "title": "Introduce capacity-based rate bands and test them on comparable units",
+        "category": "Listing performance",
+        "priority_score": 87.2,
+        "weight": 80.0,
+        "evidence_strength": 94.3,
+        "confidence": "Medium",
+        "confidence_basis": "19% of the sample lacks a field this rule depends on; association only: no causal identification (rubric score 50/100)",
+        "finding": "Capacity is the strongest visible price driver in the sample: asking ADR correlates with guest capacity at rho = +0.57 and with bedrooms at rho = +0.47 (n = 80).",
+        "evidence": "Spearman rho(ADR, guests) = +0.566 (p = < 0.0001, n = 80); rho(ADR, bedrooms) = +0.474 (p = < 0.0001, n = 80); price per guest is U-shaped (q09_bedroom_band_performance: studios about MX$458 per guest, 2-bedroom units about MX$292).",
+        "implication": "If the capacity relationship holds, flat per-listing rates leave money on the table for large units and ask too much of small ones. It is an association between capacity and price, not proof of what a given guest would pay.",
+        "action": "Build three rate bands (1-2 guests, 3-4 guests, 5+ guests) from current ADR per guest, apply them to half of the comparable listings for 8 weeks and compare occupancy and realised ADR with the remaining listings.",
+        "kpi_to_monitor": "ADR per guest and per bedroom, occupancy, and revenue per available night, by capacity band.",
+        "limitations": "19% of the city sample has no bedroom or guest count, so the relationship is estimated on the listings that do. Capacity is confounded with room type, location and quality, and no booking-level data exists to separate them.",
+        "evidence_queries": "q09_bedroom_band_performance, q02_room_type_performance",
+        "trigger_threshold": "|Spearman rho| between asking ADR and guest capacity of at least 0.40 (and at least 0.30 for bedrooms) on at least 30 listings with capacity metadata.",
+        "observed_values": "rho(ADR, guests) = +0.566 (threshold >= 0.40), rho(ADR, bedrooms) = +0.474 (threshold >= 0.30), n = 80 (threshold >= 30)"
+      },
+      {
+        "rank": 2,
+        "rule_id": "pricing_repricing_divergence",
+        "title": "Run a controlled repricing test instead of assuming price drives occupancy",
+        "category": "Pricing review",
+        "priority_score": 85.8,
+        "weight": 90.0,
+        "evidence_strength": 81.6,
+        "confidence": "Medium",
+        "confidence_basis": "association only: no causal identification (rubric score 75/100)",
+        "finding": "93.9% of listings raised their asking ADR between Aug 2025 and Apr 2026 (median +24.5%), while median calendar occupancy over the same window moved -3.1 pp.",
+        "evidence": "Within-listing paired change over 98 listings present in both months (src/analyze.py, within_listing): median ADR +24.5%, 93.9% raising; median occupancy change Apr-2026 vs Aug-2025 -3.1 pp (p25 -25.8 pp, p75 +6.8 pp). Across listings, ADR vs occupancy is rho = +0.14 (p = 0.16, n = 99), so the price level itself does not explain occupancy.",
+        "implication": "Asking prices rose while the number of nights sold did not follow. That is a signal to test elasticity, not proof that higher prices reduced demand: the same window also contains normal seasonal pricing.",
+        "action": "Pick 10-15 listings that are similar in capacity, distance band and room type; reduce the asking rate by about 10% on half of them for 6-8 weeks while holding availability and minimum nights unchanged; compare realised ADR, occupancy and revenue per available night against the untouched control listings.",
+        "kpi_to_monitor": "Realised (booked) ADR, calendar occupancy and RevPAR per listing, measured weekly for the test window against the control group.",
+        "limitations": "Association, not causation: a 9-month window cannot separate repricing from seasonal pricing, the sample is ~99 listings, the tail months are right-censored, and no cost data exists, so revenue cannot be translated into profit.",
+        "evidence_queries": "q04_monthly_seasonality, q03_listing_level_distribution",
+        "trigger_threshold": "Within-listing median asking-ADR change of at least +15% between Aug 2025 and Apr 2026 *and* median calendar occupancy falling by at least 1.0 percentage point over the same window.",
+        "observed_values": "median ADR change +24.5% (threshold >= 15%), median occupancy change -3.1 pp (threshold <= -1 pp)"
+      },
+      {
+        "rank": 3,
+        "rule_id": "revenue_concentration",
+        "title": "Profile the top decile and test whether its recipe can be replicated",
+        "category": "Revenue concentration",
+        "priority_score": 83.1,
+        "weight": 85.0,
+        "evidence_strength": 81.3,
+        "confidence": "High",
+        "confidence_basis": "direct measurement on the city sample (rubric score 100/100)",
+        "finding": "Sample revenue is concentrated: Gini 0.488, the top 10% of listings earn 31.6% of revenue and the top 20% earn 50.5%. The largest single host runs 11 listings and takes 18.9% of revenue.",
+        "evidence": "Gini 0.488; top-10% share 31.6%, top-20% share 50.5% (q10_revenue_concentration, src/analyze.py concentration); largest host 11 listings = 18.9% of sample revenue (q11_host_concentration). The professional-management flag covers 17 listings run by 2 hosts.",
+        "implication": "A portfolio that depends on a handful of listings and hosts is exposed to the loss of any one of them, and the usual planning assumption (steady median performance) will understate the risk.",
+        "action": "Take the top-decile listings as a case study: record what they share (capacity, rating, superhost status, management, distance band, length of stay), then replicate the two or three cheapest attributes on three to five mid-tier listings and track whether their revenue per available night converges.",
+        "kpi_to_monitor": "Revenue share held by the top decile of listings, median revenue of the replication cohort, and the number of hosts operating five or more listings.",
+        "limitations": "The concentration measurement is exact for this sample but the sample is ~6% of the market, so market-level concentration is not established. The top decile contains very few distinct hosts, and the professional-management comparison rests on two hosts.",
+        "evidence_queries": "q10_revenue_concentration, q11_host_concentration, q08_professional_management",
+        "trigger_threshold": "Gini coefficient of listing revenue at or above 0.40, or the top 10% of listings earning at least 30% of sample revenue.",
+        "observed_values": "Gini 0.488 (threshold >= 0.40), top-10% share 31.6% (threshold >= 30%)"
+      },
+      {
+        "rank": 4,
+        "rule_id": "data_completeness_prerequisite",
+        "title": "Complete the listing metadata before scaling capacity- or location-based pricing",
+        "category": "Data quality",
+        "priority_score": 82.9,
+        "weight": 85.0,
+        "evidence_strength": 80.8,
+        "confidence": "High",
+        "confidence_basis": "direct measurement on the city sample (rubric score 100/100)",
+        "finding": "The evidence base is incomplete: 20 of 99 city listings (20.2%) lack a bedroom count or a guest count (19 lack bedrooms, 19 lack guest capacity), 61% have inexact or unknown coordinates, and 1 listing has a partial booking history.",
+        "evidence": "Capacity fields missing for 20 listings (19 without bedrooms, 19 without guests); coordinates approximate for 54 and unknown for 6; 1 listing with fewer than 12 months of history (q15_robustness_scope, data_quality.json); monthly review volume falls 101 -> 73 -> 25 -> 6 across the last four months (q16_censoring_evidence), so 3 months are right-censored.",
+        "implication": "Capacity-based and location-based rate rules are estimated on a subset of the portfolio, and the last three months of the snapshot cannot be read as demand. Decisions taken on incomplete data can punish listings for missing metadata rather than weak performance.",
+        "action": "Before rolling out capacity bands, backfill bedrooms and guest capacity for the listings that lack them and obtain exact coordinates where the provider allows; keep using only the uncensored window for demand decisions and mark the censored months as such in every report.",
+        "kpi_to_monitor": "Share of listings with complete capacity metadata, share of listings with exact coordinates, and the month-by-month review-completeness ratio used to flag censoring.",
+        "limitations": "The gaps are measured directly, but the remedy depends on provider access and cannot be validated inside this snapshot. No booking-level records are available, so realised demand can only be proxied by reserved nights and review counts.",
+        "evidence_queries": "q15_robustness_scope, q16_censoring_evidence, q03_listing_level_distribution",
+        "trigger_threshold": "At least 15% of listings missing the capacity fields a rate rule depends on, at least 50% of listings with inexact coordinates, or any listing with a partial booking history.",
+        "observed_values": "missing capacity 20.2% (threshold >= 15%), inexact/unknown coordinates 61% (threshold >= 50%), partial-history listings 1"
+      },
+      {
+        "rank": 5,
+        "rule_id": "seasonal_amplitude",
+        "title": "Test a December rate plan against a shoulder-season availability plan",
+        "category": "Seasonal planning",
+        "priority_score": 79.9,
+        "weight": 78.0,
+        "evidence_strength": 81.8,
+        "confidence": "Medium",
+        "confidence_basis": "only 9 clean months of observation (rubric score 75/100)",
+        "finding": "Demand peaks once and mildly: Dec 2025 occupancy 33.9% against Apr 2026 25.1% (8.8 pp), and Dec 2025 revenue MX$1,342,015 is 25% above the median month.",
+        "evidence": "v_monthly_market over the uncensored window Aug 2025 - Apr 2026 (9 months, q04_monthly_seasonality): peak occupancy 33.9% in Dec 2025, trough 25.1% in Apr 2026, median quoted ADR rising from MX$842 to MX$1,150 across the window.",
+        "implication": "There is a usable December peak but no deep trough, so the opportunity is in capturing the peak and filling the shoulder months, not in a large seasonality-driven discount.",
+        "action": "Run two seasonal variants for the next December and for two shoulder months: a rate plan (peak premium plus longer minimum stays) and an availability plan (lower minimum nights, same rate); compare occupancy and revenue per available night between the variants and the untouched listings.",
+        "kpi_to_monitor": "Monthly occupancy, revenue per available night and realised ADR against the same months in the previous year, by variant.",
+        "limitations": "The amplitude is shallow (about 8 percentage points) and rests on 9 clean months, so a single peak may be noise or a local event. May-Jul 2026 are right-censored and cannot be used to confirm or extend the pattern.",
+        "evidence_queries": "q04_monthly_seasonality, q05_seasonality_by_room_type, q16_censoring_evidence",
+        "trigger_threshold": "Peak-to-trough monthly calendar occupancy of at least 6 percentage points, or peak-month revenue at least 15% above the median month, inside the uncensored window Aug 2025 - Apr 2026.",
+        "observed_values": "occupancy spread 8.8 pp (threshold >= 6 pp), peak revenue uplift 24.6% (threshold >= 15%)"
+      }
+    ],
+    "watchlist": [
+      {
+        "rank": null,
+        "rule_id": "inventory_mix_room_type",
+        "title": "Decide deliberately whether private rooms earn their place in the portfolio",
+        "category": "Portfolio strategy",
+        "priority_score": 78.6,
+        "weight": 65.0,
+        "evidence_strength": 92.2,
+        "confidence": "Medium",
+        "confidence_basis": "association only: no causal identification (rubric score 75/100)",
+        "finding": "Entire homes are 75.8% of sampled listings but 92.2% of sample revenue; median revenue per listing is 4.20x a private room.",
+        "evidence": "q02_room_type_performance: entire home median ADR MX$1,173, median occupancy 30.7%, median TTM revenue MX$128,135; private room MX$658, 12.5%, MX$30,492; Mann-Whitney p = 5.47e-07 on revenue.",
+        "implication": "Private rooms earn 7.8% of sample revenue from 24.2% of listings. That is a portfolio allocation question: capital and management attention in a low-yield segment may be better spent on entire-home units.",
+        "action": "For every private room in the portfolio, compare its revenue per available night with the local alternative of upgrading one unit to an entire home, and re-price or retire the weakest private rooms.",
+        "kpi_to_monitor": "Revenue per available night by room type, and the share of portfolio revenue contributed by private rooms.",
+        "limitations": "Room type is confounded with capacity, quality and host type, so the gap cannot be attributed to the room type itself. The sample is ~99 listings and covers one market.",
+        "evidence_queries": "q02_room_type_performance, q05_seasonality_by_room_type",
+        "trigger_threshold": "A single room type earning at least 80% of sample revenue, or a median revenue ratio of at least 2.0x between room types.",
+        "observed_values": "entire-home revenue share 92.2% (threshold >= 80%), median revenue ratio 4.20x (threshold >= 2.0x)"
+      }
+    ]
   }
 }

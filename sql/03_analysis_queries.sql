@@ -152,6 +152,7 @@ FROM ranked;
 -- name: q04_monthly_seasonality
 -- description: Month-by-month market benchmark (all 12 months). Realised demand after Apr-2026 is right-censored by the data cutoff.
 SELECT
+    month_start,
     month_label,
     listings,
     booked_listings,

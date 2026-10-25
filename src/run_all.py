@@ -7,6 +7,11 @@ Usage (from the project root):
 Each step is a separate script so it can also be run on its own. This runner
 stops on the first failure and prints which stage failed, because a downstream
 step on stale inputs is worse than no output at all.
+
+The last step (src/generate_business_report.py) validates the KPIs against the
+database, evaluates the recommendation rules and writes the executive report.
+If any of those critical checks fails it exits non-zero and no report is
+published.
 """
 
 from __future__ import annotations
@@ -24,6 +29,7 @@ STEPS = [
     ("run the 16 SQL analysis queries", "src/run_queries.py"),
     ("bootstrap, tests and within-listing metrics", "src/analyze.py"),
     ("render the 10 report figures", "src/make_figures.py"),
+    ("generate the executive report and recommendations", "src/generate_business_report.py"),
 ]
 
 
@@ -55,6 +61,7 @@ def main() -> int:
     total = time.perf_counter() - started
     print(f"Pipeline complete in {total:.1f}s.")
     print("Outputs: data/processed/, airbnb_queretaro.db, reports/")
+    print("         reports/executive_report.md, reports/decision_recommendations.csv")
     return 0
 
 

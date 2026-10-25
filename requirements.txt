@@ -24,6 +24,9 @@ python-dotenv==1.2.4
 tabulate==0.10.0
 openpyxl==3.1.5
 
+# Testing (tests/ - run with `python -m pytest tests -q` after src/run_all.py)
+pytest==9.1.1
+
 # Optional: only needed if you point the Power BI model at SQLite via ODBC
 # or migrate the schema to SQL Server Express.
 # pyodbc==5.3.0

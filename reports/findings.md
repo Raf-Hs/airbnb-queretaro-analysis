@@ -8,6 +8,11 @@ three months are right-censored.
 Every number below is reproducible from `reports/key_metrics.json` and the SQL in
 `reports/sql_results.md`. Percentages are rounded; money is MXN.
 
+The machine-generated version of this analysis — executive summary, KPI table,
+figure links, findings and prioritised actions with evidence — is
+[`reports/executive_report.md`](executive_report.md), rebuilt by
+`python src/run_all.py` from the same numbers.
+
 ---
 
 ## Headline
@@ -388,7 +393,7 @@ intervention.
 
 ## Limitations
 
-Carried forward from `docs/methodology.md` §10 and `reports/data_quality.md`:
+Carried forward from `docs/methodology.md` §11 and `reports/data_quality.md`:
 
 1. **100-listing sample, not the market.** ~6% of ~1,733 active listings.
    No market-size, market-share, or total-revenue claims.

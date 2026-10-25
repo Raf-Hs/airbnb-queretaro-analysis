@@ -2,7 +2,7 @@
 
 This document records *how* the analysis was built and *why* each decision was
 made, including the ones that constrain the conclusions. If you only read one
-section, read §10 (what this analysis cannot say).
+section, read §11 (what this analysis cannot say).
 
 ---
 
@@ -357,7 +357,78 @@ results agree. This is a genuine cross-check, not the same code path twice.
 
 ---
 
-## 10. What this analysis cannot say
+## 10. From findings to recommendations: the rule engine
+
+`src/generate_business_report.py` converts the analysis into business output.
+It is deliberately not a template with hard-written conclusions: each
+recommendation is produced by a rule that reads the calculated metrics, so the
+same data always yields the same conclusions and a rule that stops matching
+stops firing.
+
+### Pipeline of the reporting step
+
+1. **Validate** — the database, `key_metrics.json`, `sql_results.md`, the 24
+   quality checks and the 10 figures must exist, and the analysis artefacts
+   must not be older than the database (a stale SQL layer is rejected).
+2. **Recalculate** — the headline KPIs are re-derived from `v_city_listings`
+   and `v_monthly_market` in SQL.
+3. **Cross-check** — those KPIs are compared with `reports/key_metrics.json`
+   (listing count, median ADR, median occupancy, median and total revenue).
+   A mismatch aborts the run.
+4. **Recommend** — the rules below are evaluated and scored.
+5. **Report and export** — `reports/executive_report.md`,
+   `reports/decision_recommendations.csv`, and a `business_recommendations`
+   block inside `reports/key_metrics.json`.
+6. **Verify** — the written files are re-read and compared with each other
+   (section counts, figure links, recommendation order and content). Any
+   failure exits non-zero; the report is written only after its content passes
+   validation, so a failed pipeline cannot publish a report that looks
+   successful.
+
+### Rules and thresholds
+
+The thresholds are **analytical heuristics**, not statistical tests: they
+exist so that a recommendation is traceable to a number, and a reviewer who
+disagrees with a threshold can change it and re-run.
+
+| Rule | Fires when | Business action it drives |
+|---|---|---|
+| `pricing_repricing_divergence` | Median within-listing ADR change ≥ +15% **and** median occupancy change ≤ −1.0 pp (Aug 2025 → Apr 2026) | Run a controlled repricing test rather than asserting that price caused the decline |
+| `revenue_concentration` | Gini ≥ 0.40 **or** top-10% revenue share ≥ 30% | Profile the top decile and test whether its attributes can be replicated |
+| `capacity_price_signal` | \|ρ(ADR, guests)\| ≥ 0.40 and \|ρ(ADR, bedrooms)\| ≥ 0.30 on ≥ 30 listings | Introduce capacity-based rate bands and test them |
+| `seasonal_amplitude` | Peak-to-trough monthly occupancy ≥ 6 pp **or** peak-month revenue ≥ 15% above the median month (uncensored window only) | Test a seasonal rate plan against an availability plan |
+| `data_completeness_prerequisite` | ≥ 15% of listings missing capacity fields, ≥ 50% with inexact coordinates, or any partial-history listing | Backfill metadata before scaling capacity- or location-based pricing |
+| `inventory_mix_room_type` | One room type ≥ 80% of sample revenue **or** ≥ 2.0× median revenue ratio | Review portfolio allocation between room types |
+
+### Scoring and publication cut
+
+`priority_score = 0.5 × rule weight + 0.5 × evidence strength`, where the
+weight is a documented analyst judgement (0–100) and the evidence strength is
+50 when the observed value sits exactly at its threshold, capped at 100. The
+top five scores are published; rules that trigger but rank lower are listed in
+an appendix table of the report with their metrics, so nothing is dropped
+silently.
+
+### Confidence rubric
+
+Confidence describes the pattern **inside this sample**, never the wider
+market. It is computed, not typed: support ≥ 50 listings → 100 points (≥ 30 →
+70, otherwise 40); −25 when ≥ 15% of the sample is missing a field the rule
+depends on; −25 when fewer than 12 clean months exist; −25 when the claim is
+an association rather than a direct measurement; ≥ 80 → High, ≥ 50 → Medium,
+otherwise Low.
+
+### What the rules are not allowed to do
+
+No rule infers profitability (there is no cost data), counts confirmed
+bookings (there are no booking records), or converts a correlation into a
+cause. The pricing rule, for instance, fires on "prices rose while occupancy
+did not" and produces an *experiment to run*, never the claim that higher
+prices reduced demand.
+
+---
+
+## 11. What this analysis cannot say
 
 This section exists because the most common failure mode in portfolio projects is
 over-claiming.
@@ -391,7 +462,7 @@ reported next to every headline number.
 
 ---
 
-## 11. Reproducibility
+## 12. Reproducibility
 
 ```bash
 python -m venv .venv
@@ -403,9 +474,12 @@ python src/build_db.py          # rebuild SQLite from processed CSVs
 python src/run_queries.py       # 16 SQL queries → reports/sql_results.md
 python src/analyze.py           # bootstrap / tests → reports/key_metrics.json
 python src/make_figures.py      # 10 figures
+python src/generate_business_report.py  # executive report + recommendations
 ```
 
-`python src/run_all.py` runs the whole chain.
+`python src/run_all.py` runs the whole chain; `python -m pytest tests -q` runs
+the 15 tests that cover KPI correctness, the recommendation rules, report
+generation and the consistency between the report, the CSV and the JSON.
 
 Randomness is seeded (`20261025`), so bootstrap intervals reproduce exactly.
 Source hashes are pinned in `data/README.md`; if the provider re-issues the
